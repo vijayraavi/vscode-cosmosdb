@@ -64,7 +64,7 @@ export class MongoDatabaseTreeItem extends AzureParentTreeItem<IMongoTreeRoot> {
 	}
 
 	public async loadMoreChildrenImpl(_clearCache: boolean): Promise<MongoCollectionTreeItem[]> {
-		const db: Db = await this.getDb();
+		const db: Db = await this.connectToDb();
 		const collections: Collection[] = await db.collections();
 		return collections.map(collection => new MongoCollectionTreeItem(this, collection));
 	}
@@ -85,42 +85,42 @@ export class MongoDatabaseTreeItem extends AzureParentTreeItem<IMongoTreeRoot> {
 		const message: string = `Are you sure you want to delete database '${this.label}'?`;
 		const result = await vscode.window.showWarningMessage(message, { modal: true }, DialogResponses.deleteResponse, DialogResponses.cancel);
 		if (result === DialogResponses.deleteResponse) {
-			const db = await this.getDb();
+			const db = await this.connectToDb();
 			await db.dropDatabase();
 		} else {
 			throw new UserCancelledError();
 		}
 	}
 
-	public async getDb(): Promise<Db> {
+	public async connectToDb(): Promise<Db> {
 		const accountConnection = await connectToMongoClient(this.connectionString, appendExtensionUserAgent());
 		return accountConnection.db(this.databaseName);
 	}
 
-	async executeCommand(command: MongoCommand, context: IActionContext): Promise<string> {
+	public async executeCommand(command: MongoCommand, context: IActionContext): Promise<string> {
 		if (command.collection) {
-			let db = await this.getDb();
+			let db = await this.connectToDb();
 			const collection = db.collection(command.collection);
 			if (collection) {
 				const collectionTreeItem = new MongoCollectionTreeItem(this, collection, command.arguments);
-				const result = await collectionTreeItem.executeCommand(command.name, command.arguments);
+				const result = await collectionTreeItem.tryExecuteCommandDirectly(command.name, command.arguments);
 				if (result) {
 					return result;
 				}
 			}
-			return withProgress(this.executeCommandInShell(command, context), 'Executing command');
+			return withProgress(this.executeCommandInShell(command, context), 'Executing command in Mongo shell');
 
 		}
 
 		if (command.name === 'createCollection') {
 			return withProgress(this.createCollection(stripQuotes(command.arguments.join(','))).then(() => JSON.stringify({ 'Created': 'Ok' })), 'Creating collection');
 		} else {
-			return withProgress(this.executeCommandInShell(command, context), 'Executing command');
+			return withProgress(this.executeCommandInShell(command, context), 'Executing command in Mongo shell');
 		}
 	}
 
-	async createCollection(collectionName: string): Promise<MongoCollectionTreeItem> {
-		const db: Db = await this.getDb();
+	public async createCollection(collectionName: string): Promise<MongoCollectionTreeItem> {
+		const db: Db = await this.connectToDb();
 		const newCollection: Collection = db.collection(collectionName);
 		// db.createCollection() doesn't create empty collections for some reason
 		// However, we can 'insert' and then 'delete' a document, which has the side-effect of creating an empty collection
@@ -129,7 +129,7 @@ export class MongoDatabaseTreeItem extends AzureParentTreeItem<IMongoTreeRoot> {
 		return new MongoCollectionTreeItem(this, newCollection);
 	}
 
-	executeCommandInShell(command: MongoCommand, context: IActionContext): Thenable<string> {
+	private executeCommandInShell(command: MongoCommand, context: IActionContext): Thenable<string> {
 		context.properties["executeInShell"] = "true";
 		return this.getShell().then(shell => shell.exec(command.text));
 	}
