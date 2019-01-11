@@ -862,7 +862,7 @@
 		"lint": "tslint --project tsconfig.json -t verbose",
 		"lint-fix": "tslint --project tsconfig.json -t verbose --fix",
 		"postinstall": "node ./node_modules/vscode/bin/install",
-		"pretest asdf": "npm run build && npm run webpack",
+		"pretest": "npm run build && npm run webpack",
 		"test": "gulp test",
 		"update-grammar": "antlr4ts -visitor ./grammar/mongo.g4 -o ./src/mongo/grammar",
 		"webpack": "npm run build && gulp webpack-dev",

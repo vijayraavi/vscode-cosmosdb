@@ -12,7 +12,7 @@
 			],
 			"stopOnEntry": false,
 			"sourceMaps": true,
-			//asdf "preLaunchTask": "npm: pretest",
+			"preLaunchTask": "npm: pretest",
 			"env": {
 				"DEBUGTELEMETRY": "",
 				"NODE_DEBUG": ""
@@ -29,7 +29,7 @@
 			],
 			"stopOnEntry": false,
 			"sourceMaps": true,
-			//"preLaunchTask": "npm: pretest", // asdf?
+			"preLaunchTask": "npm: pretest",
 			"env": {
 				"MOCHA_grep": "", // RegExp of tests to run (empty for all)
 				"MOCHA_enableTimeouts": "0", // Disable time-outs

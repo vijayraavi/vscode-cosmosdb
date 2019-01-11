@@ -5,7 +5,8 @@
 
 //@ts-check
 
-//asdf
+// Using webpack helps reduce the install and startup time of large extensions by reducing the large number of files into a much smaller set
+// Full webpack documentation: [https://webpack.js.org/configuration/]().
 
 'use strict';
 
@@ -68,12 +69,9 @@ const config = {
     },
     output: {
         // The bundles are stored in the 'dist' folder (check package.json), see https://webpack.js.org/configuration/output/
-        //asdf path: path.resolve(__dirname, '../.run/vscode-cosmosdb/dist'),
         path: path.resolve(__dirname, 'dist'),
         filename: '[name].js',
-        libraryTarget: "commonjs2",
-        //devtoolModuleFilenameTemplate: "../[resource-path]"
-        //devtoolNamespace: path.join(__dirname, 'dist')
+        libraryTarget: "commonjs2"
     },
     devtool: "source-map",
     externals: [
@@ -107,30 +105,7 @@ const config = {
         }
     ],
     plugins: [
-        // asdf
-        // new webpack.SourceMapDevToolPlugin({
-        //     // Since we'll be debugging the sources from a copied location, we need to set the sourceRoot
-        //     filename: '[file].map[query]',
-        //     moduleFilenameTemplate: '../[resource-path]',
-        //     fallbackModuleFilenameTemplate: undefined,
-        //     append: null,
-        //     module: true,
-        //     columns: true,
-        //     lineToLine: false,
-        //     noSources: false,
-        //     namespace: 'asdf',
-        //     test: /\.(m?js|css)($|\?)/i,
-        //     //sourceRoot: path.join(__dirname, 'dist'),
-        // }),
-
         // Clean the dist folder before webpacking
-        //asdf
-        // new CleanWebpackPlugin(
-        //     ['dist'],
-        //     {
-        //         root: __dirname,
-        //         verbose: true
-        //     }),
 
         // Copy files to dist folder where the runtime can find them
         new CopyWebpackPlugin([
@@ -206,9 +181,10 @@ const config = {
                 loader: StringReplacePlugin.replace({
                     replacements: [
                         {
+                            // asdf comment
                             // e.g. path.join(__dirname, '..', '..', '..', '..', 'resources', 'dark', 'Loading.svg')
                             //  => require(__dirname + '/..' + '/..' + '/..' + '/..' + '/resources' + '/dark' + '/Loading.svg')
-                            pattern: /path.join\((__dirname|__filename),.*'resources',.*'\)/ig, //asdf
+                            pattern: /path.join\((__dirname|__filename),.*'resources',.*'\)/ig,
                             replacement: function (match, offset, string) {
                                 console.log(match);
                                 let pathExpression = match.
@@ -232,7 +208,7 @@ const config = {
                         loader: 'file-loader',
                         options: {
                             name: function (name) {
-                                console.log(name); // asdf
+                                console.log(`Extracting resource file ${name}`);
                                 return '[path][name].[ext]';
                             }
                         }
@@ -275,7 +251,7 @@ const config = {
                         {
                             pattern: /require\('socket\.io-client\/package'\)/ig,
                             replacement: function (match, offset, string) {
-                                // Replace it with package.json so it can be found
+                                // Replace it with package.json so it can be found by webpack
                                 return `require('socket.io-client/package.json')`; // asdf test // asdf other situations like this?
                             }
                         }
