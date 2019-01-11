@@ -4,12 +4,21 @@
  *--------------------------------------------------------------------------------------------*/
 
 import * as cp from 'child_process';
+import * as fse from 'fs-extra';
 import * as glob from 'glob';
 import * as gulp from 'gulp';
 import * as decompress from 'gulp-decompress';
 import * as download from 'gulp-download';
 import * as os from 'os';
 import * as path from 'path';
+
+const env = process.env;
+
+function webpack(mode: string) {
+    // without this, webpack can run out of memory in some environments
+    env.NODE_OPTIONS = '--max-old-space-size=8192';
+    return spawn(path.join(__dirname, './node_modules/.bin/webpack'), ['--mode', mode], { stdio: 'inherit', env });
+}
 
 /**
  * Installs the azure account extension before running tests (otherwise our extension would fail to activate)
@@ -38,11 +47,23 @@ function installAzureAccount() {
 }
 
 function test() {
-    const env = process.env;
     env.DEBUGTELEMETRY = '1';
-    env.MOCHA_reporter = 'mocha-junit-reporter';
-    env.MOCHA_FILE = path.join(__dirname, 'test-results.xml');
-    return cp.spawn('node', ['./node_modules/vscode/bin/test'], { stdio: 'inherit', env });
+    env.CODE_TESTS_PATH = path.join(__dirname, 'dist/test');
+    return spawn('node', ['./node_modules/vscode/bin/test'], { stdio: 'inherit', env });
 }
 
+function spawn(command, args, options) {
+    if (process.platform === 'win32') {
+        if (fse.pathExistsSync(command + '.exe')) {
+            command = command + '.exe';
+        } else if (fse.pathExistsSync(command + '.cmd')) {
+            command = command + '.cmd';
+        }
+    }
+
+    return cp.spawn(command, args, options);
+}
+
+exports['webpack-dev'] = () => webpack('development');
+exports['webpack-prod'] = () => webpack('production');
 exports.test = gulp.series(installAzureAccount, test);
