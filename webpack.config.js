@@ -21,12 +21,16 @@ const StringReplacePlugin = require("string-replace-webpack-plugin");
 const packageLock = fse.readJSONSync('./package-lock.json');
 
 let DEBUG_WEBPACK = !!process.env.DEBUG_WEBPACK;
+DEBUG_WEBPACK = true; //asdf
 
 const externalNodeModules = [
-    // Modules that we can't webpack for some reason.
+    // Modules that we can't easily webpack for some reason.
     // Keep this list small, because all the subdependencies will also be excluded
     'require_optional',
-    'vscode-languageclient'
+    'vscode-languageclient',
+    'gremlin',
+    'socket.io-client',
+    'mongodb-core' // asdf?
 ];
 
 // External modules and all their dependencies and subdependencies (these will not be webpacked)
@@ -98,7 +102,7 @@ const config = {
             // Fix trying to load .map file in node_modules\socket.io\lib\index.js
             //   in this code:
             //     clientSourceMap = read(require.resolve('socket.io-client/dist/socket.io.js.map'), 'utf-8');
-            'socket.io-client/dist/socket.io.js.map': 'commonjs socket.io-client/dist/socket.io.js.map', // (expected to fail)
+            'socket.io-client/dist/socket.io.js.map': 'commonjs socket.io-client/dist/socket.io.js.map', // (expected to fail)   asdf
 
             // Pull the rest automatically from externalModulesClosure
             ...getExternalsEntries()
@@ -164,7 +168,6 @@ const config = {
         extensions: ['.ts', '.js']
     },
     module: {
-        //asdf noParse: /websocket[\\/]lib[\\/]Validation/,
         rules: [
             {
                 test: /\.ts$/,
@@ -176,23 +179,40 @@ const config = {
                 }]
             },
 
+            // Handle references to loose resource files in nested modules.  These are problematic because:
+            //   1) Webpack doesn't know about them because they don't appear in import() statements, therefore they don't get placed into dist
+            //   2) __dirname/__filename give the path to the extension.js file, so paths will be wrong even if we copy them.
+            //
+            // Strategy to handle them:
+            //   1) Use the 'file-loader' webpack loader. In this pattern, the source code uses a require() statement to reference to the file. Since
+            //      webpack process require(), it will call the file-loader, which will return the resource path (not the contents) as the value of the require.
+            //      This loader also automatically copies the file into the dist folder where it can be found.
+            //   2) Sources have to be modified to use a require() statement for any resource that needs to be handled this way.  Many of these can be found because
+            //      they are using __dirname/__filename to find the resource file at runtime.
             {
                 test: /vscode-azureextensionui/,
                 loader: StringReplacePlugin.replace({
                     replacements: [
                         {
-                            // asdf comment
-                            // e.g. path.join(__dirname, '..', '..', '..', '..', 'resources', 'dark', 'Loading.svg')
-                            //  => require(__dirname + '/..' + '/..' + '/..' + '/..' + '/resources' + '/dark' + '/Loading.svg')
+                            // Rewrite references to resources in vscode-azureextensionui so file-loader can process them.
+                            //
+                            // e.g. change this:
+                            //   path.join(__dirname, '..', '..', '..', '..', 'resources', 'dark', 'Loading.svg')
+                            //
+                            //     to this:
+                            //
+                            // require(__dirname + '/..' + '/..' + '/..' + '/..' + '/resources' + '/dark' + '/Loading.svg')
+                            //
                             pattern: /path.join\((__dirname|__filename),.*'resources',.*'\)/ig,
                             replacement: function (match, offset, string) {
-                                console.log(match);
                                 let pathExpression = match.
                                     replace(/path\.join\((.*)\)/, '$1').
                                     replace(/\s*,\s*['"]/g, ` + '/`);
                                 let requireExpression = `require(${pathExpression})`;
                                 let resolvedExpression = `path.resolve(__dirname, ${requireExpression})`;
-                                console.log(resolvedExpression);
+                                if (DEBUG_WEBPACK) {
+                                    console.log(`Rewrote resource reference: "${match}" => "${resolvedExpression}"`);
+                                }
                                 return resolvedExpression;
                             }
                         }
@@ -201,14 +221,25 @@ const config = {
             },
 
             {
-                // asdf comment
+                // This loader allows you to use a require() statement to get the path (not contents) to a loose file at runtime. Any file
+                //   with the given extension referenced by a require() will be copied to the dist folder, and the require() at runtime will
+                //   return a path to the copied file (not the contents).
+                // For example:
+                //   let myResourcePath = require(__dirname + '/resources/myresource.gif'); // (No, this will not work if not processed by webpack);
+                //   (note that __dirname will not return the expected result at runtime because webpack flattens all source folders)
+                // At pack time:
+                //    <src>/<path>/<path>/resources/myresource.gif will be copied to dist/<path>/<path>/resources/myresource.gif
+                // At runtime:
+                //    require() will return the absolute path to dist/<path>/<path>/resources/myresource.gif
                 test: /\.(png|jpg|gif|svg)$/,
                 use: [
                     {
                         loader: 'file-loader',
                         options: {
                             name: function (name) {
-                                console.log(`Extracting resource file ${name}`);
+                                if (DEBUG_WEBPACK) {
+                                    console.log(`Extracting resource file ${name}`);
+                                }
                                 return '[path][name].[ext]';
                             }
                         }
@@ -279,21 +310,6 @@ const config = {
                     ]
                 })
             },
-
-            // {
-            //     test: /\.js$/,
-            //     loader: StringReplacePlugin.replace({
-            //         replacements: [
-            //             {
-            //                 pattern: /__filename/ig,
-            //                 replacement: function (match, offset, string) {
-            //                     //asdf
-            //                     throw new Error(`Found __filename expression that needs to be replaced.`);
-            //                 }
-            //             }
-            //         ]
-            //     })
-            // },
 
             // Note: If you use`vscode-nls` to localize your extension than you likely also use`vscode-nls-dev` to create language bundles at build time.
             // To support webpack, a loader has been added to vscode-nls-dev .Add the section below to the`modules/rules` configuration.

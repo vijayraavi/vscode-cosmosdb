@@ -917,6 +917,7 @@
 		"mongodb": "^2.2.25",
 		"mongodb-extended-json": "^1.10.0",
 		"ms-rest": "^2.2.1",
+		"node-uuid": "1.4.8",
 		"opn": "^5.4.0",
 		"socket.io": "^1.7.3",
 		"socket.io-client": "^1.7.3",
