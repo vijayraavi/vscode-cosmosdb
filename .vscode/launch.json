@@ -12,7 +12,7 @@
 			],
 			"stopOnEntry": false,
 			"sourceMaps": true,
-			//"preLaunchTask": "npm: pretest", asdf
+			"preLaunchTask": "npm: pretest", //asdf
 			"env": {
 				"DEBUGTELEMETRY": "",
 				"NODE_DEBUG": ""

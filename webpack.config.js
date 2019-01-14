@@ -29,7 +29,7 @@ const externalNodeModules = [
     'require_optional',
     'vscode-languageclient',
     'gremlin',
-    'socket.io-client',
+    'socket.io',
     'mongodb-core' // asdf?
 ];
 
@@ -110,11 +110,17 @@ const config = {
     ],
     plugins: [
         // Clean the dist folder before webpacking
+        new CleanWebpackPlugin(
+            ['dist'],
+            {
+                root: __dirname,
+                verbose: true
+            }),
 
         // Copy files to dist folder where the runtime can find them
         new CopyWebpackPlugin([
             // Test files -> dist/test (these files are ignored during packaging)
-            { from: './out/test', to: 'test' }
+            { from: './out/test', to: 'test/' }
         ]),
 
         // External node modules (can't be webpacked) -> dist/node_modules (where they can be found by extension.js)
@@ -346,8 +352,13 @@ function getExternalsCopyEntry() {
     for (let moduleName of externalModulesClosure) {
         patterns.push({
             from: `./node_modules/${moduleName}`,
-            to: `node_modules/${moduleName}`
+            to: `node_modules/${moduleName}/`
         });
+    }
+
+    if (DEBUG_WEBPACK) {
+        console.log("Copy entries:");
+        console.log(patterns);
     }
 
     return new CopyWebpackPlugin(patterns);
