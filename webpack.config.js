@@ -102,7 +102,7 @@ const config = {
             // Fix trying to load .map file in node_modules\socket.io\lib\index.js
             //   in this code:
             //     clientSourceMap = read(require.resolve('socket.io-client/dist/socket.io.js.map'), 'utf-8');
-            'socket.io-client/dist/socket.io.js.map': 'commonjs socket.io-client/dist/socket.io.js.map', // (expected to fail)   asdf
+            //'socket.io-client/dist/socket.io.js.map': 'commonjs socket.io-client/dist/socket.io.js.map', // (expected to fail)   asdf
 
             // Pull the rest automatically from externalModulesClosure
             ...getExternalsEntries()
@@ -276,25 +276,25 @@ const config = {
                 })
             },
 
-            {
-                // Fix error:
-                //   > ERROR in ./node_modules/socket.io/lib/index.js
-                //   > Module not found: Error: Can't resolve 'socket.io-client/package' in 'C:\Users\<user>\Repos\vscode-cosmosdb\node_modules\socket.io\lib'
-                // in this code:
-                //   var clientVersion = require('socket.io-client/package').version;
-                test: /socket\.io[/\\]lib[/\\]index\.js$/,
-                loader: StringReplacePlugin.replace({
-                    replacements: [
-                        {
-                            pattern: /require\('socket\.io-client\/package'\)/ig,
-                            replacement: function (match, offset, string) {
-                                // Replace it with package.json so it can be found by webpack
-                                return `require('socket.io-client/package.json')`; // asdf test // asdf other situations like this?
-                            }
-                        }
-                    ]
-                })
-            },
+            // {
+            //     // Fix error:
+            //     //   > ERROR in ./node_modules/socket.io/lib/index.js
+            //     //   > Module not found: Error: Can't resolve 'socket.io-client/package' in 'C:\Users\<user>\Repos\vscode-cosmosdb\node_modules\socket.io\lib'
+            //     // in this code:
+            //     //   var clientVersion = require('socket.io-client/package').version;
+            //     test: /socket\.io[/\\]lib[/\\]index\.js$/,
+            //     loader: StringReplacePlugin.replace({
+            //         replacements: [
+            //             {
+            //                 pattern: /require\('socket\.io-client\/package'\)/ig,
+            //                 replacement: function (match, offset, string) {
+            //                     // Replace it with package.json so it can be found by webpack
+            //                     return `require('socket.io-client/package.json')`; // asdf test // asdf other situations like this?
+            //                 }
+            //             }
+            //         ]
+            //     })
+            // },
 
             {
                 // Fix warning:
