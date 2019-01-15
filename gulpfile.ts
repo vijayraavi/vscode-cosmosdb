@@ -52,7 +52,11 @@ function test(): cp.ChildProcess {
     return spawn('node', ['./node_modules/vscode/bin/test'], { stdio: 'inherit', env });
 }
 
-function spawn(command: string, args: string[], options: {}): cp.ChildProcess {
+// tslint:disable-next-line:no-any
+function spawn(command: string, args: string[], options: any): cp.ChildProcess {
+    options = options || {};
+    options.maxBuffer = 1000000; // Defaults to 4K
+
     if (process.platform === 'win32') {
         if (fse.pathExistsSync(command + '.exe')) {
             command = command + '.exe';
