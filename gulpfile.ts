@@ -55,7 +55,7 @@ function test(): cp.ChildProcess {
 // tslint:disable-next-line:no-any
 function spawn(command: string, args: string[], options: any): cp.ChildProcess {
     options = options || {};
-    options.maxBuffer = 1000000; // Defaults to 4K
+    options.maxBuffer = 4 * 1024 * 1024; // Defaults to 200K
 
     if (process.platform === 'win32') {
         if (fse.pathExistsSync(command + '.exe')) {
