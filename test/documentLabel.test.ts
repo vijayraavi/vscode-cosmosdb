@@ -5,7 +5,7 @@
 
 
 import * as assert from 'assert';
-import { getDocumentTreeItemLabel } from '../extension';
+import { getDocumentTreeItemLabel } from '../webpackExtension';
 
 suite("Document Label Tests", () => {
     test("Non-zero number", () => {

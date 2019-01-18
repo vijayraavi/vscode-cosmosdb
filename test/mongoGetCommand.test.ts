@@ -4,11 +4,11 @@
  *--------------------------------------------------------------------------------------------*/
 
 import * as assert from 'assert';
-import { ObjectID, ObjectId } from '../extension';
+import { ObjectID, ObjectId } from '../webpackExtension';
 import { Position } from 'vscode';
 import { parseError } from 'vscode-azureextensionui';
-import { MongoCommand } from '../extension';
-import { getAllCommandsFromText, getCommandFromTextAtLocation } from '../extension';
+import { MongoCommand } from '../webpackExtension';
+import { getAllCommandsFromText, getCommandFromTextAtLocation } from '../webpackExtension';
 
 function expectSingleCommand(text: string): MongoCommand {
     let commands = getAllCommandsFromText(text);

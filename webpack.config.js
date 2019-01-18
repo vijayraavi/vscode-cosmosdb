@@ -56,7 +56,7 @@ const config = {
         // dependencies will have a copy in each entry file, no sharing).
 
         // The entrypoint of this extension, see https://webpack.js.org/configuration/entry-context/
-        extension: './extension.ts',
+        webpackExtension: './webpackExtension.ts',
 
         // Separate module for the mongo language server (doesn't share any code with extension.js)
         './mongo-languageServer': './src/mongo/languageServer.ts'

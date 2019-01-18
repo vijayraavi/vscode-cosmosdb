@@ -4,8 +4,8 @@
  *--------------------------------------------------------------------------------------------*/
 
 import * as assert from 'assert';
-import { emulatorPassword } from '../extension';
-import { addDatabaseToAccountConnectionString, getDatabaseNameFromConnectionString } from '../extension';
+import { emulatorPassword } from '../webpackExtension';
+import { addDatabaseToAccountConnectionString, getDatabaseNameFromConnectionString } from '../webpackExtension';
 
 function testDatabaseToAccountConnectionString(connectionString: string, databaseName: string, expectedConnectionString: string | undefined) {
     let databaseConnectionString = addDatabaseToAccountConnectionString(connectionString, databaseName);

@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import * as assert from 'assert';
-import { validOnTimeoutOrException } from '../extension';
+import { validOnTimeoutOrException } from '../webpackExtension';
 
 suite("inputValidation Tests", () => {
 

@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import * as assert from 'assert';
-import { rejectOnTimeout, valueOnTimeout } from '../extension';
+import { rejectOnTimeout, valueOnTimeout } from '../webpackExtension';
 
 suite("timeout Tests", () => {
     suite("rejectOnTimeout", () => {
