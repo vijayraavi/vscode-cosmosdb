@@ -136,7 +136,7 @@ export class Shell {
 				// We will only process the first time onResult is fired
 				disposable.dispose();
 
-				if (result.stringResult) {
+				if (result.stringResult !== undefined) {
 					let lines = result.stringResult.split(os.EOL).filter(line => !!line && line !== 'Type "it" for more');
 					lines = lines[lines.length - 1] === 'Type "it" for more' ? lines.splice(lines.length - 1, 1) : lines;
 					executed = true;
