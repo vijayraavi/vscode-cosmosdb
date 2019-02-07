@@ -33,8 +33,9 @@ let config = dev.getDefaultWebpackConfig({
         // Electron fork depends on file at location of original source
         'vscode-languageclient',
 
-        // contains a binary
+        // contain binaries
         'clipboardy',
+        'opn'
     ],
     entries: {
         // Note: Each entry is a completely separate Node.js application that cannot interact with any
